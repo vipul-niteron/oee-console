@@ -59,6 +59,17 @@ export async function sendSMS(phoneNumber: string, message: string) {
 }
 
 /**
+ * Creates a formatted message for customer notifications
+ * @param customerName Customer's name
+ * @param state Customer's state
+ * @param model Product model/item
+ * @returns Formatted message string
+ */
+export function createNotificationMessage(customerName: string, state: string, model: string): string {
+  return `Dear ${customerName} from ${state}, your item ${model} will be packed. Thanks for choosing our services.`;
+}
+
+/**
  * Format phone number to E.164 format
  * @param phoneNumber Phone number to format
  * @returns Formatted phone number

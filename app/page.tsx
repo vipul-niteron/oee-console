@@ -9,6 +9,7 @@ import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
 import styles from "./page.module.css";
 import Link from "next/link";
+import { sendSMS, createNotificationMessage } from './utils/twilio';
 
 Amplify.configure(outputs);
 
@@ -337,6 +338,7 @@ export default function App() {
             state: formData.state,
             model: formData.model,
             tubSerialNumber: formData.tubSerialNumber,
+            images: JSON.stringify(validImages)
           }),
         });
 
@@ -348,26 +350,20 @@ export default function App() {
         // Don't fail the submission if email fails
       }
 
-      // Send SMS if phone number is provided
-      if (formData.customerPhone) {
-        try {
-          const smsResponse = await fetch('/api/sms', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              phoneNumber: formData.customerPhone,
-              message: `Thank you for submitting your PDI form. Your tub serial number is ${formData.tubSerialNumber}.`,
-            }),
-          });
-
-          if (!smsResponse.ok) {
-            console.error('Failed to send SMS:', await smsResponse.json());
-          }
-        } catch (smsError) {
-          console.error('Error sending SMS:', smsError);
-          // Don't fail the submission if SMS fails
+      // Send SMS notification to customer
+      if (formData.customerPhone && formData.customerName && formData.state && formData.model) {
+        const message = createNotificationMessage(
+          formData.customerName,
+          formData.state,
+          formData.model
+        );
+        
+        const smsResult = await sendSMS(formData.customerPhone, message);
+        
+        if (smsResult.success) {
+          console.log('SMS notification sent successfully');
+        } else {
+          console.error('Failed to send SMS notification:', smsResult.error);
         }
       }
 
