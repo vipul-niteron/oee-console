@@ -1,3 +1,15 @@
+/*
+ * THIS FILE IS DEPRECATED
+ * 
+ * We're now using the API route at app/api/sms/route.ts instead of server actions
+ * to avoid issues with Next.js client components trying to import Node.js modules
+ * like 'net', 'tls', and 'fs' which are required by the Twilio SDK.
+ *
+ * See app/api/sms/route.ts for the updated implementation.
+ */
+
+'use server';
+
 import twilio from 'twilio';
 
 // Initialize Twilio client with environment variables
@@ -7,7 +19,7 @@ const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 
 // Create Twilio client only if environment variables are available
 let twilioClient: any = null;
-if (typeof window === 'undefined' && accountSid && authToken) {
+if (accountSid && authToken) {
   twilioClient = twilio(accountSid, authToken);
 }
 
@@ -66,7 +78,7 @@ export async function sendSMS(phoneNumber: string, message: string) {
  * @returns Formatted message string
  */
 export function createNotificationMessage(customerName: string, state: string, model: string): string {
-  return `Dear ${customerName} from ${state}, your item ${model} will be packed. Thanks for choosing our services.`;
+  return `Dear ${customerName} from ${state}, your item ${model} will be packed, thanks for choosing our services.`;
 }
 
 /**

@@ -9,11 +9,15 @@ import outputs from "@/amplify_outputs.json";
 import "@aws-amplify/ui-react/styles.css";
 import styles from "./page.module.css";
 import Link from "next/link";
-import { sendSMS, createNotificationMessage } from './utils/twilio';
 
 Amplify.configure(outputs);
 
 const client = generateClient<Schema>();
+
+// Updated to create a message template directly in the client component
+function createNotificationMessage(customerName: string, state: string, model: string): string {
+  return `Dear ${customerName} from ${state}, your item ${model} will be packed, thanks for choosing our services.`;
+}
 
 export default function App() {
   // Form state
@@ -358,12 +362,28 @@ export default function App() {
           formData.model
         );
         
-        const smsResult = await sendSMS(formData.customerPhone, message);
-        
-        if (smsResult.success) {
-          console.log('SMS notification sent successfully');
-        } else {
-          console.error('Failed to send SMS notification:', smsResult.error);
+        try {
+          const smsResponse = await fetch('/api/sms', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              phoneNumber: formData.customerPhone,
+              message: message
+            }),
+          });
+          
+          const smsResult = await smsResponse.json();
+          
+          if (smsResponse.ok) {
+            console.log('SMS notification sent successfully');
+          } else {
+            console.error('Failed to send SMS notification:', smsResult.error);
+          }
+        } catch (smsError) {
+          console.error('Error sending SMS notification:', smsError);
+          // Don't fail the submission if SMS fails
         }
       }
 
