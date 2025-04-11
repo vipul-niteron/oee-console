@@ -329,29 +329,29 @@ export default function App() {
       // Submit to database
       const response = await client.models.PDISubmission.create(submissionData);
 
-      // Send confirmation email
+      // Send WhatsApp message
       try {
-        const emailResponse = await fetch('/api/email', {
+        const whatsappResponse = await fetch('/api/email', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            toEmail: formData.customerEmail,
+            toNumber: '+15557106156', // Your WhatsApp number
             customerName: formData.customerName,
             state: formData.state,
             model: formData.model,
             tubSerialNumber: formData.tubSerialNumber,
-            images: JSON.stringify(validImages)
+            images: validImages.map(img => img.data) // Send base64 images
           }),
         });
 
-        if (!emailResponse.ok) {
-          console.error('Failed to send email:', await emailResponse.json());
+        if (!whatsappResponse.ok) {
+          console.error('Failed to send WhatsApp message:', await whatsappResponse.json());
         }
-      } catch (emailError) {
-        console.error('Error sending email:', emailError);
-        // Don't fail the submission if email fails
+      } catch (whatsappError) {
+        console.error('Error sending WhatsApp message:', whatsappError);
+        // Don't fail the submission if WhatsApp message fails
       }
 
       // Send SMS notification to customer
